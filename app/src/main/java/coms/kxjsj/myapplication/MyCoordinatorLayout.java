@@ -48,14 +48,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed, int type) {
-        //展开下拦截触摸
-        if(BottomSheetBehavior.from(findViewById(R.id.bottomRecyclerview)).getState()==BottomSheetBehavior.STATE_EXPANDED){
-            return;
-        }
         int unconsume = dy - consumed[1];
         System.out.println((unconsume) + "onNestedPreScroll-----------");
         int tempconsumed = unconsume;
-        if (scrolls != 0 && !isRefresh) {
+        boolean cannotscroll=BottomSheetBehavior.from(findViewById(R.id.bottomRecyclerview)).getState()==BottomSheetBehavior.STATE_EXPANDED;
+        if (scrolls != 0 && !isRefresh&&!cannotscroll) {
             scrolls += unconsume;
             if (scrolls + unconsume > 0) {
                 tempconsumed = -scrolls;
@@ -82,7 +79,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
         super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
         System.out.println(dyUnconsumed + "--onNestedScroll");
-        if (dyUnconsumed != 0 && !isRefresh) {
+        boolean cannotscroll=BottomSheetBehavior.from(findViewById(R.id.bottomRecyclerview)).getState()==BottomSheetBehavior.STATE_EXPANDED;
+        //展开下拦截触摸
+        System.out.println(BottomSheetBehavior.from(findViewById(R.id.bottomRecyclerview)).getState());
+
+        if (dyUnconsumed != 0 && !isRefresh&&!cannotscroll) {
             scrolls += dyUnconsumed;
             if (scrolls + dyUnconsumed > 0) {
                 scrolls = 0;
