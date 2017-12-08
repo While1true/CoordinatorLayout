@@ -8,6 +8,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -54,6 +55,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed, int type) {
+
+        if(target  instanceof NestedScrollView){
+            System.out.println(dy);
+        }
+
 
         AppBarLayout appbar = findViewById(R.id.appbar);
         if (target.getId() == R.id.bottomRecyclerview) {
@@ -214,7 +220,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         scrolls = -(int) value;
         System.out.println(value + "--" + velocity);
         if (callback != null) {
-            callback.pull(PullCallback.PULLDownBack, -(int) value);
+            callback.pull(PullCallback.PULLDownBack, (int) value);
             if (value == middle && 0 == velocity) {
                 isRefresh = true;
                 callback.middle();
