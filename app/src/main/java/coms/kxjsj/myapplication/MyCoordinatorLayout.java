@@ -8,8 +8,6 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.NestedScrollView;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,7 +40,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     }
 
     private SpringAnimation init() {
-        SpringAnimation animation = new SpringAnimation(findViewById(R.id.viewPager), SpringAnimation.SCROLL_Y, 0);
+        SpringAnimation animation = new SpringAnimation(findViewById(R.id.viewPager), SpringAnimation.TRANSLATION_Y, 0);
         animation.getSpring().setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY);
         animation.addUpdateListener(this);
         animation.getSpring().setStiffness(SpringForce.STIFFNESS_MEDIUM - 300);
@@ -107,7 +105,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
             if (callback != null) {
                 callback.pull(dy < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
             }
-            findViewById(R.id.viewPager).scrollTo(0, scrolls);
+            findViewById(R.id.viewPager).setTranslationY(-scrolls);
         }
 
         if (canscrollAppbar) {
@@ -143,7 +141,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
             if (callback != null) {
                 callback.pull(dyUnconsumed < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
             }
-            findViewById(R.id.viewPager).scrollTo(0, scrolls);
+            findViewById(R.id.viewPager).setTranslationY(-scrolls);
         }
     }
 
@@ -171,11 +169,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     public void RefreshComplete() {
         isRefresh = false;
-        SpringBack(-middle, 0);
+        SpringBack(middle, 0);
     }
 
     public void OnRefresh() {
-        SpringBack(0, -middle);
+        SpringBack(0, middle);
     }
 
     private void SpringBack(int start, int end) {
@@ -192,9 +190,9 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         if (scrolls != 0) {
             int abs = Math.abs(scrolls);
             if (abs >= middle / 2) {
-                SpringBack(scrolls, -middle);
+                SpringBack(-scrolls, middle);
             } else {
-                SpringBack(scrolls, 0);
+                SpringBack(-scrolls, 0);
             }
         }
         super.onStopNestedScroll(target, type);
@@ -213,11 +211,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onAnimationUpdate(DynamicAnimation animation, float value, float velocity) {
-        scrolls = (int) value;
+        scrolls = -(int) value;
         System.out.println(value + "--" + velocity);
         if (callback != null) {
             callback.pull(PullCallback.PULLDownBack, -(int) value);
-            if (value == -middle && 0 == velocity) {
+            if (value == middle && 0 == velocity) {
                 isRefresh = true;
                 callback.middle();
             }
@@ -226,7 +224,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onAnimationEnd(DynamicAnimation animation, boolean canceled, float value, float velocity) {
-        scrolls = (int) value;
+        scrolls = -(int) value;
         System.out.println(value + "end");
     }
 

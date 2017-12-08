@@ -30,11 +30,11 @@ public class BottomSheetUtils {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if(recyclerView.canScrollVertically(-1)&&dx<0){
-                    layoutParams.setBehavior(null);
-                }else if(layoutParams.getBehavior()==null){
-                    layoutParams.setBehavior(sheetBehavior);
-                }
+//                if(recyclerView.canScrollVertically(-1)&&dx<0){
+//                    layoutParams.setBehavior(null);
+//                }else if(layoutParams.getBehavior()==null){
+//                    layoutParams.setBehavior(sheetBehavior);
+//                }
             }
         });
 

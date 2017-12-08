@@ -40,7 +40,6 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
 
     @Override
     public boolean onNestedFling(@NonNull CoordinatorLayout coordinatorLayout, @NonNull AppBarLayout child, @NonNull View target, float velocityX, float velocityY, boolean consumed) {
-        System.out.println(velocityY+"--"+(target.getId()==R.id.bottomRecyclerview));
         if(target.getId()==R.id.bottomRecyclerview&&velocityY<0){
             return true;
         }
