@@ -93,8 +93,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
                 canscrollRefresh = true;
             }
         } else {
-            if (dy > 0 && topAndBottomOffset > -appbar.getHeight()) {
+            if (dy > 0 && topAndBottomOffset > -appbar.getMeasuredHeight()) {
                 canscrollAppbar = true;
+                if(callback!=null){
+                    callback.pull(PullCallback.PULLDownBack,-scrolls);
+                }
             }
         }
         if (canscrollRefresh) {
@@ -163,9 +166,6 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes, int type) {
-        if (animation != null) {
-            animation.skipToEnd();
-        }
         if (animation == null) {
             animation = init();
         }
@@ -184,6 +184,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     private void SpringBack(int start, int end) {
         if (scrolls != 0) {
+            animation.cancel();
             animation.getSpring().setFinalPosition(end);
             animation.setStartValue(start);
             animation.start();
@@ -193,7 +194,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     @Override
     public void onStopNestedScroll(View target, int type) {
 
-        if (scrolls != 0) {
+        if (scrolls != 0&&!isRefresh) {
             int abs = Math.abs(scrolls);
             if (abs >= middle / 2) {
                 SpringBack(-scrolls, middle);

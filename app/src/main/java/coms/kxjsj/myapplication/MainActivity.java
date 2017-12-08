@@ -2,6 +2,7 @@ package coms.kxjsj.myapplication;
 
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -19,13 +20,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
        final MyCoordinatorLayout layout=findViewById(R.id.coor);
        final AppBarLayout appBarLayout=findViewById(R.id.appbar);
+        CoordinatorLayout.LayoutParams params= (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
+        final AppBarLayout.Behavior behavior= (AppBarLayout.Behavior) params.getBehavior();
        final ProgressBar viewById = findViewById(R.id.image);
         layout.setPullCallback(new MyCoordinatorLayout.PullCallback() {
             @Override
             public void pull(int dy, int scroll) {
 
                 viewById.setIndeterminate(false);
-                viewById.setTranslationY(-viewById.getHeight()+scroll);
+                viewById.setTranslationY(behavior.getTopAndBottomOffset()+scroll);
                 System.out.println("pull"+scroll);
 
             }
