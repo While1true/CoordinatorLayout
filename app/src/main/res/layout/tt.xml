@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:background="#f0f"
-    android:layout_margin="5dp"
+    android:background="#fff"
     android:layout_height="80dp">
 <TextView
     android:id="@+id/tv"
+    android:background="#f0f"
+    android:layout_margin="5dp"
     android:text="nihaop "
     android:textColor="#fff"
     android:gravity="center"

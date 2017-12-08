@@ -6,28 +6,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="coms.kxjsj.myapplication.MainActivity">
-    <ImageView
+
+    <ProgressBar
         android:id="@+id/image"
-        android:layout_marginTop="-100dp"
-        android:src="@mipmap/ic_launcher_round"
+        android:layout_marginTop="80dp"
         android:layout_width="match_parent"
-        android:translationY="-50dp"
-        android:layout_height="100dp" />
+        android:layout_height="wrap_content"
+        android:background="@mipmap/ic_launcher_round"
+        android:src="@mipmap/ic_launcher_round"/>
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
+        app:layout_behavior="coms.kxjsj.myapplication.ScrollBehavior"
+        android:layout_width="match_parent"
+        android:layout_height="120dp">
+
+        <android.support.v4.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_scrollFlags="scroll">
+            <View
+                android:id="@+id/view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#ff0" />
+        </android.support.v4.widget.NestedScrollView>
+    </android.support.design.widget.AppBarLayout>
+
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     </android.support.v4.view.ViewPager>
 
 
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/bottomRecyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:behavior_peekHeight="50dp"
         app:elevation="4dp"
-        app:layout_behavior="@string/bottom_sheet_behavior"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        app:layout_behavior="@string/bottom_sheet_behavior" />
 </coms.kxjsj.myapplication.MyCoordinatorLayout>

@@ -20,7 +20,7 @@ public class BottomSheetUtils {
      * 两段折叠
      * @param recyclerView
      */
-    public static void setBottomRecyclerView2Collapse(final RecyclerView recyclerView,ViewPager viewPager) {
+    public static void setBottomRecyclerView2Collapse(final RecyclerView recyclerView,ViewPager viewPager,final AppBarLayout layout) {
         final CoordinatorLayout.LayoutParams layoutParams= (CoordinatorLayout.LayoutParams) recyclerView.getLayoutParams();
         final CoordinatorLayout.LayoutParams viewPagerlayoutParams= (CoordinatorLayout.LayoutParams) viewPager.getLayoutParams();
         final BottomSheetBehavior sheetBehavior= (BottomSheetBehavior) layoutParams.getBehavior();
@@ -43,6 +43,10 @@ public class BottomSheetUtils {
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 if(newState==BottomSheetBehavior.STATE_EXPANDED){
                     sheetBehavior.setPeekHeight(recyclerView.getMeasuredHeight()/2);
+
+                    if(recyclerView.getTop()<=layout.getMeasuredHeight()){
+                        layout.setExpanded(false,true);
+                    }
                 }
                 if(newState==BottomSheetBehavior.STATE_COLLAPSED){
                     resetPeekHeight(sheetBehavior,peekHeight);

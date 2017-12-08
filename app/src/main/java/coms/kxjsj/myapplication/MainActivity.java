@@ -1,7 +1,9 @@
 package coms.kxjsj.myapplication;
 
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -9,7 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
+import android.widget.ProgressBar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,28 +20,33 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
        final MyCoordinatorLayout layout=findViewById(R.id.coor);
+       final AppBarLayout appBarLayout=findViewById(R.id.appbar);
+       final ProgressBar viewById = findViewById(R.id.image);
         layout.setPullCallback(new MyCoordinatorLayout.PullCallback() {
             @Override
             public void pull(int dy, int scroll) {
-                View viewById = findViewById(R.id.image);
-                viewById.setTranslationY(scroll);
+
+                viewById.setIndeterminate(false);
+                viewById.setTranslationY(-viewById.getHeight()+scroll);
                 System.out.println("pull"+scroll);
 
             }
 
             @Override
             public void middle() {
+                viewById.setIndeterminate(true);
                 System.out.println("middle"+Thread.currentThread().getName());
                 layout.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         layout.RefreshComplete();
                     }
-                },1000);
+                },2000);
 
             }
         });
         final RecyclerView recyclerView = findViewById(R.id.bottomRecyclerview);
+
         ViewPager viewPager = findViewById(R.id.viewPager);
         viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
@@ -53,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        BottomSheetUtils.setBottomRecyclerView2Collapse(recyclerView,viewPager);
+        BottomSheetUtils.setBottomRecyclerView2Collapse(recyclerView,viewPager,appBarLayout);
 
         /**
          * 用户实现
