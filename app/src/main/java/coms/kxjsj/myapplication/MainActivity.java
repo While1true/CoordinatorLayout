@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
                 viewById.setIndeterminate(false);
                 viewById.setTranslationY(behavior.getTopAndBottomOffset()+scroll);
-                System.out.println("pull"+scroll);
+                System.out.println("pull"+(behavior.getTopAndBottomOffset()+scroll));
 
             }
 
@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         final RecyclerView recyclerView = findViewById(R.id.bottomRecyclerview);
-
         ViewPager viewPager = findViewById(R.id.viewPager);
         viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
@@ -62,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         BottomSheetUtils.setBottomRecyclerView2Collapse(recyclerView,viewPager,appBarLayout);
-
         /**
          * 用户实现
          */

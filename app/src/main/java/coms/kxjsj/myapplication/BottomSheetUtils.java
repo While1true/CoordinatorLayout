@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * Created by vange on 2017/12/7.
@@ -37,16 +38,13 @@ public class BottomSheetUtils {
 //                }
             }
         });
-
         sheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 if(newState==BottomSheetBehavior.STATE_EXPANDED){
                     sheetBehavior.setPeekHeight(recyclerView.getMeasuredHeight()/2);
 
-                    if(recyclerView.getTop()<=layout.getMeasuredHeight()){
-                        layout.setExpanded(false,true);
-                    }
+
                 }
                 if(newState==BottomSheetBehavior.STATE_COLLAPSED){
                     resetPeekHeight(sheetBehavior,peekHeight);
