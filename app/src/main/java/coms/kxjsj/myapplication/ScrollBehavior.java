@@ -54,7 +54,6 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
         }
 
         final int action = ev.getAction();
-
         // Shortcut since we're being dragged
         if (action == MotionEvent.ACTION_MOVE && mIsBeingDragged) {
             return true;

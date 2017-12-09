@@ -114,7 +114,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         boolean canscrollRefresh = false;
         int unconsume = dy - consumed[1];
         int tempconsumed = unconsume;
-        if (scrolls != 0 && !isRefresh&&type==ViewCompat.TYPE_TOUCH) {
+        if (scrolls != 0&& !isRefresh&&type==ViewCompat.TYPE_TOUCH) {
             //下拉
             if (dy < 0) {
                 if (topAndBottomOffset == 0) {
@@ -150,6 +150,10 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
             if (TransYView != null) {
                 TransYView.setTranslationY(-scrolls);
             }
+        }
+        if(topAndBottomOffset>0&&dy>0){
+            mAppbarBehavior.setTopAndBottomOffset(mAppbarBehavior.getTopAndBottomOffset()-dy);
+
         }
 
         if (canscrollAppbar) {
