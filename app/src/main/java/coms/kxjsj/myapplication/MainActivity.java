@@ -19,24 +19,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
        final MyCoordinatorLayout layout=findViewById(R.id.coor);
-       final AppBarLayout appBarLayout=findViewById(R.id.appbar);
-        CoordinatorLayout.LayoutParams params= (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
-        final AppBarLayout.Behavior behavior= (AppBarLayout.Behavior) params.getBehavior();
+        layout.setTransYView(layout);
        final ProgressBar viewById = findViewById(R.id.image);
         layout.setPullCallback(new MyCoordinatorLayout.PullCallback() {
             @Override
             public void pull(int dy, int scroll) {
 
-                viewById.setIndeterminate(false);
-                viewById.setTranslationY(behavior.getTopAndBottomOffset()+scroll);
-                System.out.println("pull"+(behavior.getTopAndBottomOffset()+scroll));
+//                viewById.setIndeterminate(false);
+//                viewById.setTranslationY(layout.getmAppbarBehavior().getTopAndBottomOffset()+scroll);
 
             }
 
             @Override
             public void middle() {
-                viewById.setIndeterminate(true);
-                System.out.println("middle"+Thread.currentThread().getName());
+//                viewById.setIndeterminate(true);
+//                System.out.println("middle"+Thread.currentThread().getName());
                 layout.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -60,13 +57,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        BottomSheetUtils.setBottomRecyclerView2Collapse(recyclerView,viewPager,appBarLayout);
+        BottomSheetUtils.setBottomRecyclerView2Collapse(layout.getmBottomBehavior(), (ViewPager) layout.getmScrollngView());
         /**
          * 用户实现
          */
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(AdapterUtils.getAdapter(100, 0));
-
 
     }
 

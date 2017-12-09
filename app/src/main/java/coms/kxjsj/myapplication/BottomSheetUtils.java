@@ -19,30 +19,23 @@ import java.lang.reflect.Method;
 public class BottomSheetUtils {
     /**
      * 两段折叠
-     * @param recyclerView
+     * @param
      */
-    public static void setBottomRecyclerView2Collapse(final RecyclerView recyclerView,ViewPager viewPager,final AppBarLayout layout) {
-        final CoordinatorLayout.LayoutParams layoutParams= (CoordinatorLayout.LayoutParams) recyclerView.getLayoutParams();
-        final CoordinatorLayout.LayoutParams viewPagerlayoutParams= (CoordinatorLayout.LayoutParams) viewPager.getLayoutParams();
-        final BottomSheetBehavior sheetBehavior= (BottomSheetBehavior) layoutParams.getBehavior();
-        final AppBarLayout.ScrollingViewBehavior viewPagersheetBehavior= (AppBarLayout.ScrollingViewBehavior) viewPagerlayoutParams.getBehavior();
+    public static void setBottomRecyclerView2Collapse(final BottomSheetBehavior sheetBehavior,ViewPager viewPager) {
         final int peekHeight = sheetBehavior.getPeekHeight();
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-//                if(recyclerView.canScrollVertically(-1)&&dx<0){
-//                    layoutParams.setBehavior(null);
-//                }else if(layoutParams.getBehavior()==null){
-//                    layoutParams.setBehavior(sheetBehavior);
-//                }
-            }
-        });
+        CoordinatorLayout.LayoutParams viewPagerLayoutParams=null;
+        CoordinatorLayout.Behavior behavior=null;
+        if(viewPager!=null){
+            viewPagerLayoutParams = (CoordinatorLayout.LayoutParams) viewPager.getLayoutParams();
+            behavior = viewPagerLayoutParams.getBehavior();
+        }
+        final CoordinatorLayout.Behavior behavior1=behavior;
+        final CoordinatorLayout.LayoutParams viewPagerLayout=viewPagerLayoutParams;
         sheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 if(newState==BottomSheetBehavior.STATE_EXPANDED){
-                    sheetBehavior.setPeekHeight(recyclerView.getMeasuredHeight()/2);
+                    sheetBehavior.setPeekHeight(peekHeight*2);
 
 
                 }
@@ -55,10 +48,14 @@ public class BottomSheetUtils {
                  * 防止appbar跟随
                  */
                 if(newState==BottomSheetBehavior.STATE_DRAGGING||newState==BottomSheetBehavior.STATE_SETTLING){
-                    viewPagerlayoutParams.setBehavior(null);
+                    if(viewPagerLayout!=null) {
+                        viewPagerLayout.setBehavior(null);
+                    }
 
                 }else {
-                    viewPagerlayoutParams.setBehavior(viewPagersheetBehavior);
+                    if(viewPagerLayout!=null) {
+                        viewPagerLayout.setBehavior(behavior1);
+                    }
                 }
             }
 

@@ -9,24 +9,32 @@ import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.NestedScrollView;
+import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.LinearLayout;
 
 /**
  * Created by vange on 2017/12/7.
  */
 
-public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAnimation.OnAnimationUpdateListener, DynamicAnimation.OnAnimationEndListener {
+public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAnimation.OnAnimationUpdateListener, DynamicAnimation.OnAnimationEndListener, AppBarLayout.OnOffsetChangedListener {
     private int scrolls = 0;
     //加载的位置
-    private int middle = 50;
+    private int middle = 0;
     //最大位置
-    private int max = -100;
+    private int max = 0;
     SpringAnimation animation;
     private boolean isRefresh = false;
 
-    private int flingMax = 20;
+    private int flingMax = 0;
+
+    private View TransYView;
+    private View mScrollngView, mAppbarLayout, mBottomView;
+    private BottomSheetBehavior mBottomBehavior;
+    private AppBarLayout.Behavior mAppbarBehavior;
+    private AppBarLayout.ScrollingViewBehavior mScrollingBehavior;
 
     public MyCoordinatorLayout(Context context) {
         this(context, null);
@@ -41,7 +49,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     }
 
     private SpringAnimation init() {
-        SpringAnimation animation = new SpringAnimation(findViewById(R.id.viewPager), SpringAnimation.TRANSLATION_Y, 0);
+        SpringAnimation animation = new SpringAnimation(TransYView, SpringAnimation.TRANSLATION_Y, 0);
         animation.getSpring().setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY);
         animation.addUpdateListener(this);
         animation.getSpring().setStiffness(SpringForce.STIFFNESS_MEDIUM - 300);
@@ -54,26 +62,59 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (max == 0) {
+            max = -h / 2;
+        }
+        if (middle == 0) {
+            middle = h / 4;
+        }
+        if (flingMax == 0) {
+            flingMax = h / 6;
+        }
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            View view = getChildAt(i);
+            CoordinatorLayout.LayoutParams LayoutParams = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
+            Behavior behavior = LayoutParams.getBehavior();
+            if (behavior != null) {
+                if (behavior instanceof AppBarLayout.ScrollingViewBehavior) {
+                    mScrollngView = view;
+                    mScrollingBehavior = (AppBarLayout.ScrollingViewBehavior) behavior;
+                } else if (behavior instanceof AppBarLayout.Behavior) {
+                    mAppbarLayout = view;
+                    ((AppBarLayout) mAppbarLayout).addOnOffsetChangedListener(this);
+                    mAppbarBehavior = (AppBarLayout.Behavior) behavior;
+                } else if (behavior instanceof BottomSheetBehavior) {
+                    mBottomView = view;
+                    mBottomBehavior = (BottomSheetBehavior) behavior;
+                }
+            }
+        }
+        if(TransYView==null){
+            TransYView=mScrollngView;
+        }
+    }
+
+    @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed, int type) {
-        System.out.println("onNestedPreScroll");
-        AppBarLayout appbar = findViewById(R.id.appbar);
-        if (target.getId() == R.id.bottomRecyclerview) {
-//            if (target.getTop() <= appbar.getMeasuredHeight()) {
-//                (((CoordinatorLayout.LayoutParams) appbar.getLayoutParams()).getBehavior()).onNestedPreScroll(this, appbar, target, dx, dy, consumed, type);
-//            }
-            BottomSheetBehavior<View> sheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottomRecyclerview));
-            sheetBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
+        if (null != mBottomView && target == mBottomView) {
+            mBottomBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
             return;
         }
 
-        LayoutParams layoutParams = (LayoutParams) appbar.getLayoutParams();
-        AppBarLayout.Behavior behaviorlayout = (AppBarLayout.Behavior) layoutParams.getBehavior();
-        int topAndBottomOffset = behaviorlayout.getTopAndBottomOffset();
+        int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         boolean canscrollAppbar = false;
         boolean canscrollRefresh = false;
         int unconsume = dy - consumed[1];
         int tempconsumed = unconsume;
-        if (scrolls != 0 && !isRefresh) {
+        if (scrolls != 0 && !isRefresh&&type==ViewCompat.TYPE_TOUCH) {
             //下拉
             if (dy < 0) {
                 if (topAndBottomOffset == 0) {
@@ -87,16 +128,13 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
                 canscrollRefresh = true;
             }
         } else {
-            if (dy > 0 && topAndBottomOffset >= -appbar.getMeasuredHeight()) {
+            if (dy > 0) {
                 canscrollAppbar = true;
-                if(callback!=null){
-                    callback.pull(PullCallback.PULLDownBack,-scrolls);
-                }
             }
         }
         if (canscrollRefresh) {
             scrolls += unconsume;
-            if (scrolls> 0) {
+            if (scrolls > 0) {
                 tempconsumed = -scrolls;
                 scrolls = 0;
             }
@@ -104,11 +142,14 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
             if (scrolls < tempmax) {
                 scrolls = tempmax;
             }
+            System.out.println(type + "-onNestedPreScroll--" + scrolls);
             consumed[1] = consumed[1] + tempconsumed;
             if (callback != null) {
                 callback.pull(dy < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
             }
-            findViewById(R.id.viewPager).setTranslationY(-scrolls);
+            if (TransYView != null) {
+                TransYView.setTranslationY(-scrolls);
+            }
         }
 
         if (canscrollAppbar) {
@@ -119,19 +160,12 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
-        System.out.println("onNestedScroll");
         super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
-        if(!isRefresh&&animation!=null){
-            animation.cancel();
-        }
-        View appbar = findViewById(R.id.appbar);
-        LayoutParams layoutParams = (LayoutParams) appbar.getLayoutParams();
-        AppBarLayout.Behavior behaviorlayout = (AppBarLayout.Behavior) layoutParams.getBehavior();
-        int topAndBottomOffset = behaviorlayout.getTopAndBottomOffset();
+        int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         //展开下拦截触摸
         if (dyUnconsumed != 0 && !isRefresh && topAndBottomOffset == 0) {
             scrolls += dyUnconsumed;
-            if (scrolls> 0) {
+            if (scrolls > 0) {
                 scrolls = 0;
             }
             int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
@@ -144,14 +178,12 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
                     obtain.recycle();
                 }
             }
+            System.out.println(type + "-onNestedScroll--" + scrolls);
             if (callback != null) {
                 callback.pull(dyUnconsumed < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
             }
-            findViewById(R.id.viewPager).setTranslationY(-scrolls);
-        }
-        if(isRefresh&&type == ViewCompat.TYPE_NON_TOUCH){
-            if (callback != null) {
-                callback.pull(PullCallback.PULLDOWN, -scrolls);
+            if (TransYView != null) {
+                TransYView.setTranslationY(-scrolls);
             }
         }
     }
@@ -165,7 +197,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes, int type) {
         if (animation == null) {
             animation = init();
-        }else{
+        } else if (!isRefresh&&type==ViewCompat.TYPE_TOUCH) {
             animation.cancel();
         }
         super.onNestedScrollAccepted(child, target, nestedScrollAxes, type);
@@ -181,8 +213,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     }
 
     private void SpringBack(int start, int end) {
-        if (scrolls != 0) {
-            animation.cancel();
+        if (scrolls != 0&&!animation.isRunning()) {
             animation.getSpring().setFinalPosition(end);
             animation.setStartValue(start);
             animation.start();
@@ -191,10 +222,10 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onStopNestedScroll(View target, int type) {
-
-        if (scrolls != 0&&!isRefresh) {
+        System.out.println("onStopNestedScroll"+type);
+        if (scrolls != 0 && !isRefresh) {
             int abs = Math.abs(scrolls);
-            if (abs >= middle / 2) {
+            if (abs >= middle) {
                 SpringBack(-scrolls, middle);
             } else {
                 SpringBack(-scrolls, 0);
@@ -217,14 +248,13 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     @Override
     public void onAnimationUpdate(DynamicAnimation animation, float value, float velocity) {
         scrolls = -(int) value;
-        System.out.println(value + "--" + velocity);
         if (callback != null) {
             callback.pull(PullCallback.PULLDownBack, (int) value);
             if (value == middle && 0 == velocity) {
                 isRefresh = true;
                 callback.middle();
             }
-            if(value==0&&0 == velocity){
+            if (value == 0 && 0 == velocity) {
                 isRefresh = false;
             }
         }
@@ -236,11 +266,80 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         System.out.println(value + "end");
     }
 
+    @Override
+    public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+        System.out.println(verticalOffset);
+        if (scrolls != 0 && callback != null&&isRefresh) {
+            callback.pull(PullCallback.PULLOTHER,-scrolls);
+        }
+    }
+
     interface PullCallback {
-        int PULLDOWN = -1, PULLDownBack = 1;
+        //下拉 appbar拉 回退
+        int PULLDOWN = -1, PULLOTHER = 0, PULLDownBack = 1;
 
         void pull(int dy, int scroll);
 
         void middle();
+    }
+
+    public boolean isRefresh() {
+        return isRefresh;
+    }
+
+    public View getmScrollngView() {
+        return mScrollngView;
+    }
+
+    public AppBarLayout getmAppbarLayout() {
+        return (AppBarLayout) mAppbarLayout;
+    }
+
+    public View getmBottomView() {
+        return mBottomView;
+    }
+
+    public BottomSheetBehavior getmBottomBehavior() {
+        return mBottomBehavior;
+    }
+
+    public AppBarLayout.Behavior getmAppbarBehavior() {
+        return mAppbarBehavior;
+    }
+
+    public AppBarLayout.ScrollingViewBehavior getmScrollingBehavior() {
+        return mScrollingBehavior;
+    }
+
+    public int getMiddle() {
+        return middle;
+    }
+
+    public void setMiddle(int middle) {
+        this.middle = middle;
+    }
+
+    public int getMax() {
+        return max;
+    }
+
+    public void setMax(int max) {
+        this.max = max;
+    }
+
+    public int getFlingMax() {
+        return flingMax;
+    }
+
+    public void setFlingMax(int flingMax) {
+        this.flingMax = flingMax;
+    }
+
+    public View getTransYView() {
+        return TransYView;
+    }
+
+    public void setTransYView(View TransYView) {
+        this.TransYView = TransYView;
     }
 }
