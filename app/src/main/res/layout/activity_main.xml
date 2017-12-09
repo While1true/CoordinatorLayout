@@ -20,7 +20,7 @@
         app:layout_behavior="coms.kxjsj.myapplication.ScrollBehavior"
         android:layout_width="match_parent"
         android:layout_height="120dp">
-            <coms.kxjsj.myapplication.NestChildFramLayout
+            <View
                 android:id="@+id/view"
                 app:layout_scrollFlags="scroll"
                 android:layout_width="match_parent"
