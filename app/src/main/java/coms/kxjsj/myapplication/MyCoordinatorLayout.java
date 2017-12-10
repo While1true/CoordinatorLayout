@@ -182,9 +182,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
                 scrolls = tempmax;
                 //模拟点击事件取消动画
                 if (type == ViewCompat.TYPE_NON_TOUCH) {
-                    MotionEvent obtain = MotionEvent.obtain(0, 0, MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                    target.onTouchEvent(obtain);
-                    obtain.recycle();
+//                    MotionEvent obtain = MotionEvent.obtain(0, 0, MotionEvent.ACTION_CANCEL, 0, 0, 0);
+//                    target.onTouchEvent(obtain);
+//                    obtain.recycle();
+                    onStopNestedScroll(target,ViewCompat.TYPE_NON_TOUCH);
+                    return;
                 }
             }
             System.out.println(type + "-onNestedScroll--" + scrolls);
