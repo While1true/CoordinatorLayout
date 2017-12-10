@@ -117,6 +117,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
             mBottomBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
             return;
         }
+        if(type!=0){
+            return;
+        }
+        if(!isRefresh)
+            animation.cancel();
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         boolean canscrollAppbar = false;
         boolean canscrollRefresh = false;
@@ -173,10 +178,15 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
         super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
+        if(type!=0){
+            return;
+        }
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         if (target == mBottomView)
             return;
         //展开下拦截触摸
+        if(!isRefresh)
+        animation.cancel();
         System.out.println(type + "onNestedScroll");
         if (dyUnconsumed != 0&& !isRefresh&&topAndBottomOffset == 0) {
             scrolls += dyUnconsumed;
@@ -252,7 +262,10 @@ boolean isstart=false;
     @Override
     public void onStopNestedScroll(View target, int type) {
         super.onStopNestedScroll(target, type);
-            System.out.println("onStopNestedScroll");
+        if(type!=0){
+            return;
+        }
+            System.out.println("onStopNestedScroll"+target.getClass().getSimpleName()+" "+target.getId());
             if (scrolls != 0 && !isRefresh&&!isstart) {
                 int abs = Math.abs(scrolls);
                 if (abs >= middle) {
