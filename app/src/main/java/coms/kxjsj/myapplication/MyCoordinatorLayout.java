@@ -53,7 +53,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
             animation = new SpringAnimation(TransYView, SpringAnimation.TRANSLATION_Y, 0);
             animation.getSpring().setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY);
             animation.addUpdateListener(this);
-            animation.getSpring().setStiffness(SpringForce.STIFFNESS_MEDIUM - 300);
+            animation.getSpring().setStiffness(800);
             animation.addEndListener(this);
         }
         return animation;
@@ -67,13 +67,13 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (max == 0) {
-            max = -h / 2;
+            max = -h / 4;
         }
         if (middle == 0) {
-            middle = h / 4;
+            middle = h / 6;
         }
         if (flingMax == 0) {
-            flingMax = h / 6;
+            flingMax = h / 8;
         }
     }
 
@@ -115,9 +115,6 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         if (target == mBottomView) {
             if(type==0)
             mBottomBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
-            return;
-        }
-        if(type!=0){
             return;
         }
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
@@ -179,6 +176,9 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         if(type!=0){
             return;
         }
+        if(!isRefresh){
+            animation.cancel();
+        }
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         if (target == mBottomView)
             return;
@@ -189,24 +189,24 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
             if (scrolls > 0) {
                 scrolls = 0;
             }
-            int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
-            if (scrolls < tempmax) {
-                scrolls=tempmax;
-                try {
-                    Method stopScrollersInternal = target.getClass().getDeclaredMethod("stopScrollersInternal");
-                    stopScrollersInternal.setAccessible(true);
-                   stopScrollersInternal.invoke(target);
-                    onStopNestedScroll(target,1);
-                }catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(target.getClass().getSimpleName());
+//            int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
+//            if (scrolls < tempmax) {
+//                scrolls=tempmax;
+//                try {
+//                    Method stopScrollersInternal = target.getClass().getDeclaredMethod("stopScrollersInternal");
+//                    stopScrollersInternal.setAccessible(true);
+//                   stopScrollersInternal.invoke(target);
+//                    onStopNestedScroll(target,1);
+//                }catch (NoSuchMethodException e) {
+//                    e.printStackTrace();
+//                } catch (IllegalAccessException e) {
+//                    e.printStackTrace();
+//                } catch (InvocationTargetException e) {
+//                    e.printStackTrace();
+//                }
+//                System.out.println(target.getClass().getSimpleName());
 
-            }
+//            }
             if (callback != null) {
                 callback.pull(dyUnconsumed < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
             }
