@@ -1,9 +1,7 @@
 package coms.kxjsj.myapplication;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
-import android.support.animation.DynamicAnimation;
-import android.support.animation.SpringAnimation;
-import android.support.animation.SpringForce;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
@@ -11,21 +9,23 @@ import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 
 /**
  * Created by vange on 2017/12/7.
  */
 
-public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAnimation.OnAnimationUpdateListener, DynamicAnimation.OnAnimationEndListener, AppBarLayout.OnOffsetChangedListener {
+public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnimator.AnimatorUpdateListener, AppBarLayout.OnOffsetChangedListener {
     private int scrolls = 0;
     //加载的位置
     private int middle = 0;
     //最大位置
     private int max = 0;
-    SpringAnimation animation;
+    ValueAnimator animation;
     private boolean isRefresh = false;
 
     private int flingMax = 0;
@@ -42,21 +42,25 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     public MyCoordinatorLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        if (animation == null) {
+            animation = ValueAnimator.ofInt();
+            animation.setInterpolator(new DecelerateInterpolator());
+            animation.addUpdateListener(this);
+        }
     }
 
     public int getScrolls() {
         return scrolls;
     }
 
-    private SpringAnimation init() {
-        if(animation==null) {
-            animation = new SpringAnimation(TransYView, SpringAnimation.TRANSLATION_Y, 0);
-            animation.getSpring().setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY);
-            animation.addUpdateListener(this);
-            animation.getSpring().setStiffness(800);
-            animation.addEndListener(this);
-        }
-        return animation;
+    private void startAnimator(int from, int to) {
+
+        animation.cancel();
+        animation.setIntValues(from, to);
+        final float distanceRatio = (float) (from - to) / getHeight();
+        int duration = (int) ((distanceRatio + 1) * 150);
+        animation.setDuration(duration);
+        animation.start();
     }
 
     public MyCoordinatorLayout(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -113,8 +117,8 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed, int type) {
         if (target == mBottomView) {
-            if(type==0)
-            mBottomBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
+            if (type == 0)
+                mBottomBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
             return;
         }
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
@@ -173,40 +177,40 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
         super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
+        if (!isRefresh&&animation!=null) {
+            animation.cancel();
+        }
         if(type!=0){
             return;
-        }
-        if(!isRefresh){
-            animation.cancel();
         }
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         if (target == mBottomView)
             return;
         //展开下拦截触摸
         System.out.println(type + "onNestedScroll");
-        if (dyUnconsumed != 0&& !isRefresh&&topAndBottomOffset == 0) {
+        if (dyUnconsumed != 0 && !isRefresh && topAndBottomOffset == 0) {
             scrolls += dyUnconsumed;
             if (scrolls > 0) {
                 scrolls = 0;
             }
-//            int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
-//            if (scrolls < tempmax) {
-//                scrolls=tempmax;
-//                try {
-//                    Method stopScrollersInternal = target.getClass().getDeclaredMethod("stopScrollersInternal");
-//                    stopScrollersInternal.setAccessible(true);
-//                   stopScrollersInternal.invoke(target);
-//                    onStopNestedScroll(target,1);
-//                }catch (NoSuchMethodException e) {
-//                    e.printStackTrace();
-//                } catch (IllegalAccessException e) {
-//                    e.printStackTrace();
-//                } catch (InvocationTargetException e) {
-//                    e.printStackTrace();
-//                }
-//                System.out.println(target.getClass().getSimpleName());
+            int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
+            if (scrolls < tempmax) {
+                scrolls=tempmax;
+                try {
+                    Method stopScrollersInternal = target.getClass().getDeclaredMethod("stopScrollersInternal");
+                    stopScrollersInternal.setAccessible(true);
+                    stopScrollersInternal.invoke(target);
+                    onStopNestedScroll(target,1);
+                }catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(target.getClass().getSimpleName());
 
-//            }
+            }
             if (callback != null) {
                 callback.pull(dyUnconsumed < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
             }
@@ -218,7 +222,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        if(scrolls==0){
+        if (scrolls == 0) {
             return false;
         }
         return super.onNestedFling(target, velocityX, velocityY, consumed);
@@ -226,9 +230,6 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes, int type) {
-        if (animation == null) {
-             init();
-        }
         super.onNestedScrollAccepted(child, target, nestedScrollAxes, type);
     }
 
@@ -242,34 +243,21 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     }
 
     private void SpringBack(int start, int end) {
-        if (animation == null) {
-             init();
-        }
-        if (scrolls != 0) {
-            isstart=true;
-            animation.cancel();
-            animation.getSpring().setFinalPosition(end);
-            animation.setStartValue(start);
-            animation.start();
-
-        }
+        startAnimator(start, end);
     }
-boolean isstart=false;
+
     @Override
     public void onStopNestedScroll(View target, int type) {
         super.onStopNestedScroll(target, type);
-        if(type!=0){
-            return;
-        }
-            System.out.println("onStopNestedScroll"+target.getClass().getSimpleName()+" "+target.getId());
-            if (scrolls != 0 && !isRefresh&&!isstart) {
-                int abs = Math.abs(scrolls);
-                if (abs >= middle) {
-                    isRefresh = true;
-                    SpringBack(-scrolls, middle);
-                } else {
-                    SpringBack(-scrolls, 0);
-                }
+        System.out.println("onStopNestedScroll" + target.getClass().getSimpleName() + " " + target.getId());
+        if (scrolls != 0 && !isRefresh&&!animation.isRunning()) {
+            int abs = Math.abs(scrolls);
+            if (abs >= middle) {
+                isRefresh = true;
+                SpringBack(-scrolls, middle);
+            } else {
+                SpringBack(-scrolls, 0);
+            }
         }
     }
 
@@ -285,28 +273,6 @@ boolean isstart=false;
     }
 
     @Override
-    public void onAnimationUpdate(DynamicAnimation animation, float value, float velocity) {
-        scrolls = -(int) value;
-        if (callback != null) {
-            callback.pull(PullCallback.PULLDownBack, (int) value);
-            if (value == middle && 0 == velocity) {
-                isRefresh = true;
-                callback.middle();
-            }
-            if (value == 0 && 0 == velocity) {
-                isRefresh = false;
-            }
-        }
-    }
-
-    @Override
-    public void onAnimationEnd(DynamicAnimation animation, boolean canceled, float value, float velocity) {
-        scrolls = -(int) value;
-        System.out.println(value + "end");
-        isstart=false;
-    }
-
-    @Override
     public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
         System.out.println(verticalOffset);
         /**
@@ -314,6 +280,22 @@ boolean isstart=false;
          */
         if (scrolls != 0 && callback != null && isRefresh) {
             callback.pull(PullCallback.PULLOTHER, -scrolls);
+        }
+    }
+
+    @Override
+    public void onAnimationUpdate(ValueAnimator animation) {
+        scrolls = -(int) animation.getAnimatedValue();
+        mScrollngView.setTranslationY(-scrolls);
+        if (callback != null) {
+            callback.pull(PullCallback.PULLDownBack, -scrolls);
+            if (-scrolls == middle && 1 == animation.getAnimatedFraction()) {
+                isRefresh = true;
+                callback.middle();
+            }
+            if (scrolls == 0 && 1== animation.getAnimatedFraction()) {
+                isRefresh = false;
+            }
         }
     }
 
