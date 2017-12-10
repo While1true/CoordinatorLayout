@@ -8,12 +8,9 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.NestedScrollView;
-import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.LinearLayout;
 
 /**
  * Created by vange on 2017/12/7.
@@ -103,6 +100,14 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     }
 
     @Override
+    public boolean onStartNestedScroll(View child, View target, int axes, int type) {
+        if(!isRefresh){
+            animation.cancel();
+        }
+        return super.onStartNestedScroll(child, target, axes, type);
+    }
+
+    @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed, int type) {
         if (null != mBottomView && target == mBottomView) {
             mBottomBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
@@ -151,10 +156,10 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
                 TransYView.setTranslationY(-scrolls);
             }
         }
-        if(topAndBottomOffset>0&&dy>0){
-            mAppbarBehavior.setTopAndBottomOffset(mAppbarBehavior.getTopAndBottomOffset()-dy);
-
-        }
+//        if(topAndBottomOffset>0&&dy>0){
+//            mAppbarBehavior.setTopAndBottomOffset(mAppbarBehavior.getTopAndBottomOffset()-dy);
+//
+//        }
 
         if (canscrollAppbar) {
             super.onNestedPreScroll(target, dx, tempconsumed, consumed, type);
@@ -201,8 +206,6 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes, int type) {
         if (animation == null) {
             animation = init();
-        } else if (!isRefresh&&type==ViewCompat.TYPE_TOUCH) {
-            animation.cancel();
         }
         super.onNestedScrollAccepted(child, target, nestedScrollAxes, type);
     }
@@ -217,7 +220,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     }
 
     private void SpringBack(int start, int end) {
-        if (scrolls != 0&&!animation.isRunning()) {
+        if (animation == null) {
+            animation = init();
+        }
+        if (scrolls != 0) {
+            animation.cancel();
             animation.getSpring().setFinalPosition(end);
             animation.setStartValue(start);
             animation.start();
@@ -230,6 +237,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         if (scrolls != 0 && !isRefresh) {
             int abs = Math.abs(scrolls);
             if (abs >= middle) {
+                isRefresh=true;
                 SpringBack(-scrolls, middle);
             } else {
                 SpringBack(-scrolls, 0);
@@ -273,6 +281,9 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     @Override
     public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
         System.out.println(verticalOffset);
+        /**
+         * 正在刷新时的移动
+         */
         if (scrolls != 0 && callback != null&&isRefresh) {
             callback.pull(PullCallback.PULLOTHER,-scrolls);
         }

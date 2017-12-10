@@ -42,11 +42,13 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
     public ScrollBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
+
     private void ensureVelocityTracker() {
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain();
         }
     }
+
     @Override
     public boolean onInterceptTouchEvent(CoordinatorLayout parent, AppBarLayout child, MotionEvent ev) {
         if (mTouchSlop < 0) {
@@ -65,7 +67,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
                 final int x = (int) ev.getX();
                 final int y = (int) ev.getY();
                 View child1 = ((MyCoordinatorLayout) parent).getmBottomView();
-                if (canDragView(child)&&parent.isPointInChildBounds(child, x, y)&&(child1!=null&&!parent.isPointInChildBounds(child1,x,y))) {
+                if (canDragView(child) && parent.isPointInChildBounds(child, x, y) && (child1 != null && !parent.isPointInChildBounds(child1, x, y))) {
                     mLastMotionY = y;
                     mActivePointerId = ev.getPointerId(0);
                     ensureVelocityTracker();
@@ -140,7 +142,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
                     mLastMotionY = y;
                     mActivePointerId = ev.getPointerId(0);
                     ensureVelocityTracker();
-                }else {
+                } else {
                     return false;
                 }
                 break;
@@ -167,16 +169,22 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
 
                 if (mIsBeingDragged) {
                     mLastMotionY = y;
-                    System.out.println("dy:"+dy);
-//                    tste();
-                    // We're being dragged so scroll the ABL
-                    Method method = getScrollMethod(child,"scroll");
-                    try {
-                         method.invoke(this, parent, child, dy, -child.getTotalScrollRange(), -((MyCoordinatorLayout) parent).getMax());
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
+                    System.out.println("dy:" + dy);
+                    if (getParentScrolls(parent) != 0 && getTopAndBottomOffset() >= 0) {
+                        if (dy < 0) {
+                            parent.onNestedScroll(child, 0, 0, 0, dy, ViewCompat.TYPE_TOUCH);
+                        } else if (dy > 0) {
+                            parent.onNestedPreScroll(child, 0, dy, new int[2], ViewCompat.TYPE_TOUCH);
+                        }
+                    } else {
+                        if (dy < 0 && getTopAndBottomOffset() == 0) {
+                            parent.onNestedScroll(child, 0, 0, 0, dy, ViewCompat.TYPE_TOUCH);
+                        } else {
+                            if (dy < 0 && getTopAndBottomOffset() - dy > 0) {
+                                dy = getTopAndBottomOffset();
+                            }
+                            scroll(parent, child, dy);
+                        }
                     }
 //                    scroll(parent, child, dy, getMaxDragOffset(child), 0);
                 }
@@ -186,24 +194,21 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
                     mVelocityTracker.addMovement(ev);
                     mVelocityTracker.computeCurrentVelocity(1000);
                     float yvel = mVelocityTracker.getYVelocity(mActivePointerId);
-                    Method method=getAnimatorMethod(child);
-                    try {
-                        method.invoke(this,parent,child,0,yvel);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
+                    if (getParentScrolls(parent) != 0) {
+                        parent.onStopNestedScroll(child, ViewCompat.TYPE_TOUCH);
+                    }else{
+                        fling(parent, child,yvel);
                     }
-//                    tste();
-//                    Method method = getFlingMethod(child,"fling");
-//                    try {
-//                        method.invoke(this, parent,child,-child.getTotalScrollRange(),-((MyCoordinatorLayout) parent).getMax(), 0);
-//                    } catch (IllegalAccessException e) {
-//                        e.printStackTrace();
-//                    } catch (InvocationTargetException e) {
-//                        e.printStackTrace();
+//                        if (yvel <= 0) {
+//                            aninatorTo(parent, child, 0, yvel);
+//                        } else {
+//                            aninatorTo(parent, child, child.getMeasuredHeight(), yvel);
+//                        }
+//                        if(getTopAndBottomOffset()>0){
+//                            aninatorTo(parent, child, child.getMeasuredHeight(), yvel);
+//                        }
+
 //                    }
-//                    fling(parent, child, -child.getTotalScrollRange(), 0, yvel);
                 }
                 // $FALLTHROUGH
             case MotionEvent.ACTION_CANCEL: {
@@ -225,9 +230,48 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
 
     }
 
+    private void fling(CoordinatorLayout parent, AppBarLayout child,float yvel) {
+        Method method = getFlingMethod(child,"fling");
+        try {
+            method.invoke(this, parent,child,-child.getHeight(),-((MyCoordinatorLayout) parent).getMax(), yvel);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+//                    fling(parent, child, -child.getHeight(), 0, yvel);
+    }
+
+    private void aninatorTo(CoordinatorLayout parent, AppBarLayout child, int podition, float yvel) {
+        Method method = getAnimatorMethod(child);
+
+        try {
+            method.invoke(this, parent, child, podition, yvel);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void scroll(CoordinatorLayout parent, AppBarLayout child, int dy) {
+        Method method = getScrollMethod(child, "scroll");
+        try {
+            method.invoke(this, parent, child, dy, -child.getTotalScrollRange(), -((MyCoordinatorLayout) parent).getMax());
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int getParentScrolls(View parent) {
+        return ((MyCoordinatorLayout) parent).getScrolls();
+    }
+
     private Method getAnimatorMethod(AppBarLayout child) {
         try {
-            if(animateOffsetTo==null) {
+            if (animateOffsetTo == null) {
                 animateOffsetTo = getClass().getSuperclass().getDeclaredMethod("animateOffsetTo", CoordinatorLayout.class, AppBarLayout.
                         class, int.class, float.class);
                 animateOffsetTo.setAccessible(true);
@@ -239,7 +283,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
         return null;
     }
 
-    private boolean canDragView(AppBarLayout child){
+    private boolean canDragView(AppBarLayout child) {
         Method method = getcanDragViewMethod();
         try {
             return (boolean) method.invoke(this, child);
@@ -250,9 +294,10 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
         }
         return false;
     }
+
     private Method getcanDragViewMethod() {
         try {
-            if(canDragViewMethod ==null) {
+            if (canDragViewMethod == null) {
                 canDragViewMethod = getClass().getSuperclass().getDeclaredMethod("canDragView", AppBarLayout.class);
                 canDragViewMethod.setAccessible(true);
             }
@@ -268,19 +313,19 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
         for (Method declaredMethod : declaredMethods) {
             String name = declaredMethod.getName();
             Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
-            String cc="";
+            String cc = "";
             for (Class<?> parameterType : parameterTypes) {
                 String name1 = parameterType.getName();
-                cc+=name1+"---";
+                cc += name1 + "---";
             }
-            System.out.println(name+":"+cc+"\n");
+            System.out.println(name + ":" + cc + "\n");
         }
     }
 
 
-    private Method getScrollMethod(AppBarLayout child,String name) {
+    private Method getScrollMethod(AppBarLayout child, String name) {
         try {
-            if(fling ==null) {
+            if (fling == null) {
                 fling = getshortcut(child).getDeclaredMethod(name, CoordinatorLayout.class, View.
                         class, int.class, int.class, int.class);
                 fling.setAccessible(true);
@@ -291,9 +336,10 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
         }
         return null;
     }
-    private Method getFlingMethod(AppBarLayout child,String name) {
+
+    private Method getFlingMethod(AppBarLayout child, String name) {
         try {
-            if(scroll==null) {
+            if (scroll == null) {
                 scroll = getshortcut(child).getDeclaredMethod(name, CoordinatorLayout.class, View.
                         class, int.class, int.class, float.class);
                 scroll.setAccessible(true);
@@ -304,6 +350,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
         }
         return null;
     }
+
     @Override
     public void onNestedScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
 
