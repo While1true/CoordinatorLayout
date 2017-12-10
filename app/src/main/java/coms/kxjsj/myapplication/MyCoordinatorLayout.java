@@ -12,6 +12,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
  * Created by vange on 2017/12/7.
  */
@@ -46,11 +49,13 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     }
 
     private SpringAnimation init() {
-        SpringAnimation animation = new SpringAnimation(TransYView, SpringAnimation.TRANSLATION_Y, 0);
-        animation.getSpring().setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY);
-        animation.addUpdateListener(this);
-        animation.getSpring().setStiffness(SpringForce.STIFFNESS_MEDIUM - 300);
-        animation.addEndListener(this);
+        if(animation==null) {
+            animation = new SpringAnimation(TransYView, SpringAnimation.TRANSLATION_Y, 0);
+            animation.getSpring().setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY);
+            animation.addUpdateListener(this);
+            animation.getSpring().setStiffness(SpringForce.STIFFNESS_MEDIUM - 300);
+            animation.addEndListener(this);
+        }
         return animation;
     }
 
@@ -94,8 +99,8 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
                 }
             }
         }
-        if(TransYView==null){
-            TransYView=mScrollngView;
+        if (TransYView == null) {
+            TransYView = mScrollngView;
         }
     }
 
@@ -108,16 +113,16 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed, int type) {
         if (target == mBottomView) {
+            if(type==0)
             mBottomBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
             return;
         }
-
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         boolean canscrollAppbar = false;
         boolean canscrollRefresh = false;
         int unconsume = dy - consumed[1];
         int tempconsumed = unconsume;
-        if (scrolls != 0&& !isRefresh&&type==ViewCompat.TYPE_TOUCH) {
+        if (scrolls != 0 && !isRefresh && type == ViewCompat.TYPE_TOUCH) {
             //下拉
             if (dy < 0) {
                 if (topAndBottomOffset == 0) {
@@ -169,23 +174,33 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
         super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
+        if (target == mBottomView)
+            return;
         //展开下拦截触摸
-        if (dyUnconsumed != 0 && !isRefresh && topAndBottomOffset == 0) {
+        System.out.println(type + "onNestedScroll");
+        if (dyUnconsumed != 0&& !isRefresh&&topAndBottomOffset == 0) {
             scrolls += dyUnconsumed;
             if (scrolls > 0) {
                 scrolls = 0;
             }
             int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
             if (scrolls < tempmax) {
-                scrolls = tempmax;
-                //模拟点击事件取消动画
-                if (type == ViewCompat.TYPE_NON_TOUCH) {
-                    MotionEvent obtain = MotionEvent.obtain(0, 10, MotionEvent.ACTION_CANCEL, 100, 100, 0);
-                    getmScrollngView().onTouchEvent(obtain);
-                    obtain.recycle();
+                scrolls=tempmax;
+                try {
+                    Method stopScrollersInternal = target.getClass().getDeclaredMethod("stopScrollersInternal");
+                    stopScrollersInternal.setAccessible(true);
+                   stopScrollersInternal.invoke(target);
+                    onStopNestedScroll(target,1);
+                }catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
                 }
+                System.out.println(target.getClass().getSimpleName());
+
             }
-            System.out.println(type + "-onNestedScroll--" + scrolls);
             if (callback != null) {
                 callback.pull(dyUnconsumed < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
             }
@@ -203,7 +218,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     @Override
     public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes, int type) {
         if (animation == null) {
-            animation = init();
+             init();
         }
         super.onNestedScrollAccepted(child, target, nestedScrollAxes, type);
     }
@@ -219,7 +234,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     private void SpringBack(int start, int end) {
         if (animation == null) {
-            animation = init();
+             init();
         }
         if (scrolls != 0) {
             animation.cancel();
@@ -231,17 +246,17 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public void onStopNestedScroll(View target, int type) {
-        System.out.println("onStopNestedScroll"+type);
-        if (scrolls != 0 && !isRefresh) {
-            int abs = Math.abs(scrolls);
-            if (abs >= middle) {
-                isRefresh=true;
-                SpringBack(-scrolls, middle);
-            } else {
-                SpringBack(-scrolls, 0);
-            }
-        }
         super.onStopNestedScroll(target, type);
+            System.out.println("onStopNestedScroll");
+            if (scrolls != 0 && !isRefresh) {
+                int abs = Math.abs(scrolls);
+                if (abs >= middle) {
+                    isRefresh = true;
+                    SpringBack(-scrolls, middle);
+                } else {
+                    SpringBack(-scrolls, 0);
+                }
+        }
     }
 
     @Override
@@ -282,8 +297,8 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         /**
          * 正在刷新时的移动
          */
-        if (scrolls != 0 && callback != null&&isRefresh) {
-            callback.pull(PullCallback.PULLOTHER,-scrolls);
+        if (scrolls != 0 && callback != null && isRefresh) {
+            callback.pull(PullCallback.PULLOTHER, -scrolls);
         }
     }
 
