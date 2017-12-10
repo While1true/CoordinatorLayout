@@ -120,8 +120,6 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         if(type!=0){
             return;
         }
-        if(!isRefresh)
-            animation.cancel();
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         boolean canscrollAppbar = false;
         boolean canscrollRefresh = false;
@@ -185,8 +183,6 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
         if (target == mBottomView)
             return;
         //展开下拦截触摸
-        if(!isRefresh)
-        animation.cancel();
         System.out.println(type + "onNestedScroll");
         if (dyUnconsumed != 0&& !isRefresh&&topAndBottomOffset == 0) {
             scrolls += dyUnconsumed;
