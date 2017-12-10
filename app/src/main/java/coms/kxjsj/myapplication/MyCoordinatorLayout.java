@@ -212,6 +212,9 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        if(scrolls==0){
+            return false;
+        }
         return super.onNestedFling(target, velocityX, velocityY, consumed);
     }
 
@@ -237,18 +240,20 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
              init();
         }
         if (scrolls != 0) {
+            isstart=true;
             animation.cancel();
             animation.getSpring().setFinalPosition(end);
             animation.setStartValue(start);
             animation.start();
+
         }
     }
-
+boolean isstart=false;
     @Override
     public void onStopNestedScroll(View target, int type) {
         super.onStopNestedScroll(target, type);
             System.out.println("onStopNestedScroll");
-            if (scrolls != 0 && !isRefresh) {
+            if (scrolls != 0 && !isRefresh&&!isstart) {
                 int abs = Math.abs(scrolls);
                 if (abs >= middle) {
                     isRefresh = true;
@@ -289,6 +294,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
     public void onAnimationEnd(DynamicAnimation animation, boolean canceled, float value, float velocity) {
         scrolls = -(int) value;
         System.out.println(value + "end");
+        isstart=false;
     }
 
     @Override
