@@ -101,15 +101,13 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int axes, int type) {
-        if(!isRefresh){
-            animation.cancel();
-        }
+
         return super.onStartNestedScroll(child, target, axes, type);
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed, int type) {
-        if (null != mBottomView && target == mBottomView) {
+        if (target == mBottomView) {
             mBottomBehavior.onNestedPreScroll(this, target, target, dx, dy, consumed, type);
             return;
         }
@@ -182,11 +180,9 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements DynamicAni
                 scrolls = tempmax;
                 //模拟点击事件取消动画
                 if (type == ViewCompat.TYPE_NON_TOUCH) {
-//                    MotionEvent obtain = MotionEvent.obtain(0, 0, MotionEvent.ACTION_CANCEL, 0, 0, 0);
-//                    target.onTouchEvent(obtain);
-//                    obtain.recycle();
-                    onStopNestedScroll(target,ViewCompat.TYPE_NON_TOUCH);
-                    return;
+                    MotionEvent obtain = MotionEvent.obtain(0, 10, MotionEvent.ACTION_CANCEL, 100, 100, 0);
+                    getmScrollngView().onTouchEvent(obtain);
+                    obtain.recycle();
                 }
             }
             System.out.println(type + "-onNestedScroll--" + scrolls);
