@@ -71,7 +71,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (max == 0) {
-            max = -h / 4;
+            max = -h / 2;
         }
         if (middle == 0) {
             middle = h / 6;
@@ -155,6 +155,9 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
                 tempconsumed = -scrolls;
                 scrolls = 0;
             }
+            if (scrolls < max) {
+                scrolls = max;
+            }
 //            int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
 //            if (scrolls < tempmax) {
 //                scrolls = tempmax;
@@ -193,6 +196,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
                 if (scrolls > 0) {
                     scrolls = 0;
                 }
+                System.out.println("scrolls"+scrolls+"max"+max);
                 if (scrolls < max) {
                     scrolls = max;
                 }
