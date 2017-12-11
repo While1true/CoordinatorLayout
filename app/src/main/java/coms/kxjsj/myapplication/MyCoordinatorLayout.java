@@ -5,11 +5,11 @@ import android.content.Context;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -77,7 +77,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
             middle = h / 6;
         }
         if (flingMax == 0) {
-            flingMax = h / 8;
+            flingMax = -h / 8;
         }
     }
 
@@ -126,7 +126,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
         boolean canscrollRefresh = false;
         int unconsume = dy - consumed[1];
         int tempconsumed = unconsume;
-        if (scrolls != 0 && !isRefresh && type == ViewCompat.TYPE_TOUCH) {
+        if (scrolls != 0 && !isRefresh&&type==0) {
             //下拉
             if (dy < 0) {
                 if (topAndBottomOffset == 0) {
@@ -141,7 +141,11 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
             }
         } else {
             if (dy > 0) {
-                canscrollAppbar = true;
+                if(topAndBottomOffset==-mAppbarLayout.getMeasuredHeightAndState()){
+                    canscrollRefresh=true;
+                }else {
+                    canscrollAppbar = true;
+                }
             }
         }
         if (canscrollRefresh) {
@@ -150,10 +154,10 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
                 tempconsumed = -scrolls;
                 scrolls = 0;
             }
-            int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
-            if (scrolls < tempmax) {
-                scrolls = tempmax;
-            }
+//            int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
+//            if (scrolls < tempmax) {
+//                scrolls = tempmax;
+//            }
             System.out.println(type + "-onNestedPreScroll--" + scrolls);
             consumed[1] = consumed[1] + tempconsumed;
             if (callback != null) {
@@ -177,54 +181,74 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
         super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
-        if (!isRefresh&&animation!=null) {
-            animation.cancel();
-        }
-        if(type!=0){
-            return;
-        }
+
         int topAndBottomOffset = mAppbarBehavior == null ? 0 : mAppbarBehavior.getTopAndBottomOffset();
         if (target == mBottomView)
             return;
         //展开下拦截触摸
         System.out.println(type + "onNestedScroll");
-        if (dyUnconsumed != 0 && !isRefresh && topAndBottomOffset == 0) {
-            scrolls += dyUnconsumed;
-            if (scrolls > 0) {
-                scrolls = 0;
+        if (type == 0) {
+            if (!isRefresh ) {
+                animation.cancel();
             }
-            int tempmax = type == ViewCompat.TYPE_TOUCH ? max : -flingMax;
-            if (scrolls < tempmax) {
-                scrolls=tempmax;
-                try {
-                    Method stopScrollersInternal = target.getClass().getDeclaredMethod("stopScrollersInternal");
-                    stopScrollersInternal.setAccessible(true);
-                    stopScrollersInternal.invoke(target);
-                    onStopNestedScroll(target,1);
-                }catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
+            if (dyUnconsumed != 0 && !isRefresh && topAndBottomOffset == 0) {
+                scrolls += dyUnconsumed;
+                if (scrolls > 0) {
+                    scrolls = 0;
+                }
+                if (scrolls < max) {
+                    scrolls = max;
+                }
+                if (callback != null) {
+                    callback.pull(dyUnconsumed < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
+                }
+                if (TransYView != null) {
+                    TransYView.setTranslationY(-scrolls);
+                }
+            }
+        } else {
+            if((isRefresh||animation.isRunning())&&dyUnconsumed<0&&topAndBottomOffset==0){
+                    stopRecyclerview(target);
+               return;
+            }
+            if (dyUnconsumed != 0&& topAndBottomOffset == 0) {
+                scrolls += dyUnconsumed;
+                if (scrolls > 0) {
+                    scrolls = 0;
+                }
+                if (scrolls < flingMax) {
+                    scrolls = flingMax;
+                   stopRecyclerview(target);
+                   onStopNestedScroll(target, 0);
                 }
                 System.out.println(target.getClass().getSimpleName());
 
+                if (callback != null) {
+                    callback.pull(dyUnconsumed < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
+                }
+                if (TransYView != null) {
+                    TransYView.setTranslationY(-scrolls);
+                }
             }
-            if (callback != null) {
-                callback.pull(dyUnconsumed < 0 ? PullCallback.PULLDOWN : PullCallback.PULLDownBack, -scrolls);
-            }
-            if (TransYView != null) {
-                TransYView.setTranslationY(-scrolls);
-            }
+        }
+    }
+
+    private void stopRecyclerview(View target) {
+        try {
+            Method stopScrollersInternal = target.getClass().getDeclaredMethod("stopScrollersInternal");
+            stopScrollersInternal.setAccessible(true);
+            stopScrollersInternal.invoke(target);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        if (scrolls == 0) {
-            return false;
-        }
         return super.onNestedFling(target, velocityX, velocityY, consumed);
     }
 
@@ -235,7 +259,12 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
 
 
     public void RefreshComplete() {
-        SpringBack(middle, 0);
+        if (mScrollngView.getTop()<=0&&callback != null) {
+            callback.pull(PullCallback.PULLDownBack, 0);
+            isRefresh=false;
+        }else {
+            SpringBack(middle, 0);
+        }
     }
 
     public void OnRefresh() {
@@ -250,7 +279,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
     public void onStopNestedScroll(View target, int type) {
         super.onStopNestedScroll(target, type);
         System.out.println("onStopNestedScroll" + target.getClass().getSimpleName() + " " + target.getId());
-        if (scrolls != 0 && !isRefresh&&!animation.isRunning()) {
+        if (scrolls != 0 && !isRefresh && !animation.isRunning()) {
             int abs = Math.abs(scrolls);
             if (abs >= middle) {
                 isRefresh = true;
@@ -293,7 +322,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
                 isRefresh = true;
                 callback.middle();
             }
-            if (scrolls == 0 && 1== animation.getAnimatedFraction()) {
+            if (scrolls == 0 && 1 == animation.getAnimatedFraction()) {
                 isRefresh = false;
             }
         }

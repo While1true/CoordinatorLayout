@@ -25,7 +25,7 @@ public class AdapterUtils {
 
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-                TextView tv=holder.itemView.findViewById(R.id.tv);
+                TextView tv= (TextView) holder.itemView.findViewById(R.id.tv);
                 if(color!=0){
                     holder.itemView.setBackgroundColor(color);
                 }

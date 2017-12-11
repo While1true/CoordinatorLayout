@@ -183,7 +183,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
                             if (dy < 0 && getTopAndBottomOffset() - dy > 0) {
                                 dy = getTopAndBottomOffset();
                             }
-                            scroll(parent, child, dy);
+                            scroll(parent, child,dy);
                         }
                     }
 //                    scroll(parent, child, dy, getMaxDragOffset(child), 0);
@@ -233,7 +233,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
     private void fling(CoordinatorLayout parent, AppBarLayout child,float yvel) {
         Method method = getFlingMethod(child,"fling");
         try {
-            method.invoke(this, parent,child,-child.getHeight(),-((MyCoordinatorLayout) parent).getMax(), yvel);
+            method.invoke(this, parent,child,-child.getHeight(),/*-((MyCoordinatorLayout) parent).getMax()*/0, yvel);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -257,7 +257,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
     private void scroll(CoordinatorLayout parent, AppBarLayout child, int dy) {
         Method method = getScrollMethod(child, "scroll");
         try {
-            method.invoke(this, parent, child, dy, -child.getTotalScrollRange(), -((MyCoordinatorLayout) parent).getMax());
+            method.invoke(this, parent, child, dy, -child.getTotalScrollRange(), /*-((MyCoordinatorLayout) parent).getMax()*/0);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
