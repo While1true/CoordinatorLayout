@@ -183,7 +183,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
                             if (dy < 0 && getTopAndBottomOffset() - dy > 0) {
                                 dy = getTopAndBottomOffset();
                             }
-                            scroll(parent, child,dy);
+                                scroll(parent, child, dy);
                         }
                     }
 //                    scroll(parent, child, dy, getMaxDragOffset(child), 0);

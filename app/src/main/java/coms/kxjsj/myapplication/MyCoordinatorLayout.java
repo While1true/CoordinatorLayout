@@ -167,10 +167,6 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
                 TransYView.setTranslationY(-scrolls);
             }
         }
-//        if(topAndBottomOffset>0&&dy>0){
-//            mAppbarBehavior.setTopAndBottomOffset(mAppbarBehavior.getTopAndBottomOffset()-dy);
-//
-//        }
 
         if (canscrollAppbar) {
             super.onNestedPreScroll(target, dx, tempconsumed, consumed, type);
