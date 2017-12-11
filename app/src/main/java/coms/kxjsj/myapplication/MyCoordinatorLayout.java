@@ -141,6 +141,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
             }
         } else {
             if (dy > 0) {
+                //如果要保留滚出后刷新的视图。这句去掉
                 if (topAndBottomOffset == -mAppbarLayout.getMeasuredHeightAndState()) {
                     canscrollRefresh = true;
                 } else {
