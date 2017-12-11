@@ -126,7 +126,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
         boolean canscrollRefresh = false;
         int unconsume = dy - consumed[1];
         int tempconsumed = unconsume;
-        if (scrolls != 0 && !isRefresh&&type==0) {
+        if (scrolls != 0 && !isRefresh && type == 0) {
             //下拉
             if (dy < 0) {
                 if (topAndBottomOffset == 0) {
@@ -141,9 +141,9 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
             }
         } else {
             if (dy > 0) {
-                if(topAndBottomOffset==-mAppbarLayout.getMeasuredHeightAndState()){
-                    canscrollRefresh=true;
-                }else {
+                if (topAndBottomOffset == -mAppbarLayout.getMeasuredHeightAndState()) {
+                    canscrollRefresh = true;
+                } else {
                     canscrollAppbar = true;
                 }
             }
@@ -184,7 +184,7 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
         //展开下拦截触摸
         System.out.println(type + "onNestedScroll");
         if (type == 0) {
-            if (!isRefresh ) {
+            if (!isRefresh) {
                 animation.cancel();
             }
             if (dyUnconsumed != 0 && !isRefresh && topAndBottomOffset == 0) {
@@ -203,19 +203,19 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
                 }
             }
         } else {
-            if((isRefresh||animation.isRunning())&&dyUnconsumed<0&&topAndBottomOffset==0){
-                    stopRecyclerview(target);
-               return;
+            if ((isRefresh || animation.isRunning()) && dyUnconsumed < 0 && topAndBottomOffset == 0) {
+                stopRecyclerview(target);
+                return;
             }
-            if (dyUnconsumed != 0&& topAndBottomOffset == 0) {
+            if (dyUnconsumed != 0 && topAndBottomOffset == 0) {
                 scrolls += dyUnconsumed;
                 if (scrolls > 0) {
                     scrolls = 0;
                 }
                 if (scrolls < flingMax) {
                     scrolls = flingMax;
-                   stopRecyclerview(target);
-                   onStopNestedScroll(target, 0);
+                    stopRecyclerview(target);
+                    onStopNestedScroll(target, 0);
                 }
                 System.out.println(target.getClass().getSimpleName());
 
@@ -255,12 +255,12 @@ public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnima
 
 
     public void RefreshComplete() {
-        if (mScrollngView.getTop()<=0&&callback != null) {
-            callback.pull(PullCallback.PULLDownBack, 0);
-            isRefresh=false;
-        }else {
-            SpringBack(middle, 0);
-        }
+            if (scrolls != 0) {
+                SpringBack(-scrolls, 0);
+            } else {
+                scrolls = 0;
+                isRefresh = false;
+            }
     }
 
     public void OnRefresh() {
