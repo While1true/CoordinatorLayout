@@ -20,7 +20,7 @@ public class MyFragment extends Fragment {
         View inflate = inflater.inflate(R.layout.recyclerview, container, false);
         RecyclerView recyclerView=inflate.findViewById(R.id.childrecyclerview);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(),3));
-        recyclerView.setAdapter(AdapterUtils.getAdapter(100,0xff353535));
+        recyclerView.setAdapter(AdapterUtils.getAdapter(100,0xff2f36f5));
         return inflate;
     }
 }

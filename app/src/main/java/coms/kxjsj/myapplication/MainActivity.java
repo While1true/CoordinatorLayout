@@ -11,8 +11,12 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import coms.kxjsj.myapplication.viewpager.AlphaTransformer;
+import coms.kxjsj.myapplication.viewpager.LoopFragmentPagerAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,8 +24,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-       final MyCoordinatorLayout layout=findViewById(R.id.coor);
-       final ProgressBar viewById = findViewById(R.id.image);
+        final MyCoordinatorLayout layout=findViewById(R.id.coor);
+        final View viewById = findViewById(R.id.image);
+        ViewPager viewPagerx=findViewById(R.id.viewpagerx);
+        viewPagerx.setPageTransformer(false,new AlphaTransformer());
+        viewPagerx.setAdapter(new LoopFragmentPagerAdapter(getSupportFragmentManager()) {
+            @Override
+            public int getActualCount() {
+                return 6;
+            }
+
+            @Override
+            public Fragment getActualItem(int position) {
+                return new coms.kxjsj.myapplication.viewpager.MyFragment();
+            }
+
+            @Override
+            public CharSequence getActualPagerTitle(int position) {
+                return null;
+            }
+        }.setAutoSwitch(true));
+        viewById.post(new Runnable() {
+            @Override
+            public void run() {
+                layout.setMiddle(viewById.getMeasuredHeight());
+            }
+        });
         findViewById(R.id.appbar).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -39,11 +67,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void middle() {
-                viewById.setIndeterminate(true);
+                findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
                 layout.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         layout.RefreshComplete();
+                        findViewById(R.id.progressBar).setVisibility(View.GONE);
                     }
                 },2000);
 

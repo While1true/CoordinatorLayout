@@ -27,7 +27,10 @@ public class AdapterUtils {
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
                 TextView tv= (TextView) holder.itemView.findViewById(R.id.tv);
                 if(color!=0){
+                    tv.setBackgroundResource(R.drawable.z);
                     holder.itemView.setBackgroundColor(color);
+                }else{
+                    holder.itemView.setBackgroundColor(0xffff00ff);
                 }
                 tv.setText("Item:"+position);
             }

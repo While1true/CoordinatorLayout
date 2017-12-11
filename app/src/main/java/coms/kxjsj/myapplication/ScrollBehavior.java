@@ -354,7 +354,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
     @Override
     public void onNestedScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child, View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type) {
 
-        if (target == ((MyCoordinatorLayout) coordinatorLayout).getmBottomView() && dyUnconsumed < 0 && type == ViewCompat.TYPE_NON_TOUCH) {
+        if (target == ((MyCoordinatorLayout) coordinatorLayout).getmBottomView()) {
             return;
         }
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
@@ -362,7 +362,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
 
     @Override
     public void onNestedPreScroll(CoordinatorLayout coordinatorLayout, AppBarLayout child, View target, int dx, int dy, int[] consumed, int type) {
-        if (target == ((MyCoordinatorLayout) coordinatorLayout).getmBottomView() && dy < 0 && type == ViewCompat.TYPE_NON_TOUCH) {
+        if (target == ((MyCoordinatorLayout) coordinatorLayout).getmBottomView()) {
             return;
         }
         super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type);
@@ -370,7 +370,7 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
 
     @Override
     public boolean onNestedFling(@NonNull CoordinatorLayout coordinatorLayout, @NonNull AppBarLayout child, @NonNull View target, float velocityX, float velocityY, boolean consumed) {
-        if (target == ((MyCoordinatorLayout) coordinatorLayout).getmBottomView() && velocityY < 0) {
+        if (target == ((MyCoordinatorLayout) coordinatorLayout).getmBottomView()) {
             return true;
         }
         return super.onNestedFling(coordinatorLayout, child, target, velocityX, velocityY, consumed);

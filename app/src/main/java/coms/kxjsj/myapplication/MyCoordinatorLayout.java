@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 public class MyCoordinatorLayout extends CoordinatorLayout implements ValueAnimator.AnimatorUpdateListener, AppBarLayout.OnOffsetChangedListener {
     private int scrolls = 0;
     //加载的位置
-    private int middle = 0;
+    private int middle =0;
     //最大位置
     private int max = 0;
     ValueAnimator animation;
