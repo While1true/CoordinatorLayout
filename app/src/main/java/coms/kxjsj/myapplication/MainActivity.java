@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void middle() {
                 viewById.setIndeterminate(true);
-//                System.out.println("middle"+Thread.currentThread().getName());
                 layout.postDelayed(new Runnable() {
                     @Override
                     public void run() {
