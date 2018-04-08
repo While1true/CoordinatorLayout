@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        final RecyclerView recyclerView = findViewById(R.id.bottomRecyclerview);
+//        final RecyclerView recyclerView = findViewById(R.id.bottomRecyclerview);
         ViewPager viewPager = findViewById(R.id.viewPager);
         viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
@@ -92,12 +92,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        BottomSheetUtils.setBottomRecyclerView2Collapse(layout.getmBottomBehavior(), (ViewPager) layout.getmScrollngView());
-        /**
-         * 用户实现
-         */
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerView.setAdapter(AdapterUtils.getAdapter(100, 0));
+//        BottomSheetUtils.setBottomRecyclerView2Collapse(layout.getmBottomBehavior(), (ViewPager) layout.getmScrollngView());
+//        /**
+//         * 用户实现
+//         */
+//        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+//        recyclerView.setAdapter(AdapterUtils.getAdapter(100, 0));
 
     }
 

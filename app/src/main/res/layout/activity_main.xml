@@ -55,12 +55,12 @@
     </android.support.v4.view.ViewPager>
 
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/bottomRecyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:translationZ="1000dp"
-        app:behavior_peekHeight="50dp"
-        app:elevation="4dp"
-        app:layout_behavior="@string/bottom_sheet_behavior" />
+    <!--<android.support.v7.widget.RecyclerView-->
+        <!--android:id="@+id/bottomRecyclerview"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:translationZ="1000dp"-->
+        <!--app:behavior_peekHeight="50dp"-->
+        <!--app:elevation="4dp"-->
+        <!--app:layout_behavior="@string/bottom_sheet_behavior" />-->
 </coms.kxjsj.myapplication.MyCoordinatorLayout>

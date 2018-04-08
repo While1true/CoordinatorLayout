@@ -66,8 +66,10 @@ public class ScrollBehavior extends AppBarLayout.Behavior {
                 mIsBeingDragged = false;
                 final int x = (int) ev.getX();
                 final int y = (int) ev.getY();
-                View child1 = ((MyCoordinatorLayout) parent).getmBottomView();
-                if (canDragView(child) && parent.isPointInChildBounds(child, x, y) && (child1 != null && !parent.isPointInChildBounds(child1, x, y))) {
+                //有bottomview的时候
+//                View child1 = ((MyCoordinatorLayout) parent).getmBottomView();
+//                if (canDragView(child) && parent.isPointInChildBounds(child, x, y) && (child1 != null && !parent.isPointInChildBounds(child1, x, y))) {
+                if (canDragView(child) && parent.isPointInChildBounds(child, x, y)) {
                     mLastMotionY = y;
                     mActivePointerId = ev.getPointerId(0);
                     ensureVelocityTracker();
